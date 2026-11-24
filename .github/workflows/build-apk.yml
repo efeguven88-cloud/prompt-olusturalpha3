@@ -22,11 +22,20 @@ jobs:
 
       - name: Bağımlılıkları kur
         run: npm install
-
+        
       - name: Web dosyalarını www klasörüne kopyala
         run: |
-          mkdir -p www
-          cp index.html www/index.html
+          if [ -f www/index.html ]; then
+            echo "www/index.html zaten var"
+          else
+            F=$(find . -name index.html -not -path "./node_modules/*" -not -path "./android/*" | head -n 1)
+            if [ -z "$F" ]; then
+              echo "index.html bulunamadı. Repodaki dosyalar:"; ls -R | head -50; exit 1
+            fi
+            echo "Bulundu: $F"
+            mkdir -p www
+            cp "$F" www/index.html
+          fi
 
       - name: Android platformu yoksa ekle
         run: '[ -d android ] || npx cap add android'
